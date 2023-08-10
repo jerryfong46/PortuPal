@@ -1,0 +1,159 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f5f5;
+}
+
+.flashcard {
+    width: 600px;
+    height: 300px;
+    border: 1px solid #333;
+    background-color: #FAFAFA;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Adds a background image*/
+    background-image: url('/path_to_your_static_folder/paper-texture.jpg');
+    /* Replace with your actual path */
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.button-container {
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    /* Stack children vertically */
+    align-items: center;
+    /* Center buttons horizontally */
+}
+
+.control-btn {
+    width: 120px;
+    /* This sets a fixed width for both buttons. Adjust as needed. */
+    margin: 5px 0;
+    /* Adds a little space between the buttons */
+    padding: 10px 20px;
+    /* Vertical and horizontal padding */
+    border: none;
+    border-radius: 5px;
+    /* Rounded corners */
+    cursor: pointer;
+    /* Changes the mouse cursor when hovering over the button */
+    transition: background-color 0.3s;
+    /* Smooth color change animation */
+    background-color: #007BFF;
+    color: #fff;
+    text-align: center;
+    /* This ensures the text of the button is centered */
+}
+
+
+.control-btn:hover {
+    background-color: #0056b3;
+}
+
+.secondary-btn:hover {
+    background-color: #e0e0e0;
+    /* Slightly darker gray when hovered */
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    color: black;
+    padding-left: 20px;
+    font-size: 1.5em;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    padding-right: 20px;
+}
+
+.sidebar a:hover {
+    background-color: #e0e0e0;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin-bottom: 15px;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #007BFF;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.active {
+    background-color: #f0f0f0;
+    /* Light gray; adjust as desired */
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    /* Adjust as needed */
+    padding: 20px;
+}
+
+#word-display {
+    font-size: 60px;
+    /* Make this larger or smaller based on preference */
+    margin-bottom: 10px;
+    /* Creates a gap between word and sentence */
+}
+
+#sentence-display {
+    font-size: 30px;
+    /* Smaller font for the sentence */
+    text-align: center;
+    color: #666;
+    /* Optional, for a lighter text color */
+}
+
+.toggle-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.toggle-container input[type="radio"] {
+    display: none;
+}
+
+.toggle-container label {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 1px solid black;
+}
+
+.toggle-container input[type="radio"]:checked+label {
+    background-color: #ddd;
+}

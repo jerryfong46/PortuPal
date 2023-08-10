@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- ... other head elements ... -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <ul>
+                <li><i class="fas fa-home"></i> <a href="/">Home</a></li>
+                <li><i class="fas fa-clipboard"></i> <a href="/flashcards"
+                        class="{{ 'active' if active_page == 'flashcards' else '' }}">Flashcards</a> </li>
+                <li><i class="fas fa-book"></i> <a href="/stories">Stories</a></li>
+            </ul>
+
+        </aside>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Your JavaScript scripts -->
+</body>
+
+</html>

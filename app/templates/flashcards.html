@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="toggle-container">
+    <input type="radio" id="learn" name="mode" value="learn" checked>
+    <label for="learn">Learn</label>
+    <input type="radio" id="practice" name="mode" value="practice">
+    <label for="practice">Practice</label>
+</div>
+
+<div class="flashcard">
+    <div class="card-content">
+        <p id="word-display">Press 'Enter' to start!</p>
+        <p id="sentence-display"></p> <!-- This is the new element for displaying the sentence -->
+    </div>
+
+</div>
+
+<div class="button-container">
+    <button id="flip-btn" class="control-btn">Flip</button>
+    <button id="next-btn" class="control-btn secondary-btn">Next</button>
+</div>
+
+<!-- Include your JavaScript at the end of the body -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+{% endblock %}
