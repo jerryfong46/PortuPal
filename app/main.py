@@ -29,9 +29,43 @@ def write_to_csv(file_path, words):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    USER_ID = 1
+
+    # Calculate learned words
+    learned_words_df = pd.read_csv("data/user/learned_words.csv")
+    learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+    learned_words_list = learned_words_df["word_id"].tolist()
+
+    words_learned = len(
+        learned_words_df["word_id"].unique()
+    )  # number of unique words learned
+
+    # Calculate words learned today
+    today = datetime.date.today().isoformat()  # Get today's date in YYYY-MM-DD format
+    words_reviewed = len(
+        learned_words_df[learned_words_df["date_last_accessed"] == today]
+    )
+
+    # Calculate words reviewed today
+    words_learned_today = len(
+        learned_words_df[learned_words_df["date_first_accessed"] == today]
+    )
+
+    # Calculate conversational coverage
+    all_words_df = pd.read_csv("data/raw/dictionary/words.csv")
+    all_words_df = all_words_df[all_words_df["wordID"].isin(learned_words_list)]
+    spoken_pct = round(all_words_df["perMil"].sum() / 1000000 * 100, 1)
+
+    return render_template(
+        "index.html",
+        words_learned=words_learned,
+        words_reviewed=words_reviewed,
+        words_learned_today=words_learned_today,
+        spoken_pct=spoken_pct,
+    )
 
 
+@app.route("/")
 @app.route("/home")
 def homepage():
     # Your logic for the home page, for example, displaying stats
@@ -164,4 +198,4 @@ def mark_as_learned(wordID):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

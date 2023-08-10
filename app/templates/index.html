@@ -1,17 +1,67 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!DOCTYPE html>
-<html>
 
-<head>
-    <title>Welcome to PortuPal</title>
-</head>
+<style>
+    .card-title {
+        font-size: 1rm;
+        /* Smaller than the default */
+    }
 
-<body>
-    <h1>Welcome to PortuPal</h1>
-</body>
+    .card-text {
+        font-size: 3.5rem;
+        /* Larger than the default */
+        font-weight: bold;
+        /* Bold text */
+    }
+</style>
 
-</html>
+<div class="row justify-content-around">
+
+    <!-- Total Words Learned -->
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Words</h5>
+                <p class="card-text">{{ words_learned }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Words Learned Today -->
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Learned Today</h5>
+                <p class="card-text">{{ words_learned_today }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviewed Card -->
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Reviewed Today</h5>
+                <p class="card-text">{{ words_reviewed }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Words Reviewed Card -->
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Conversational %</h5>
+                <p class="card-text">{{ spoken_pct }}</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<h1 class="text-center mt-5">Welcome to PortuPal</h1>
+
+
 
 {% endblock %}

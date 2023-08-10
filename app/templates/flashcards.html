@@ -2,12 +2,25 @@
 
 {% block content %}
 
+<style>
+    .flashcard {
+        border: 1px solid #007bff;
+        border-radius: 5px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
 <div class="toggle-container">
     <input type="radio" id="learn" name="mode" value="learn" checked>
     <label for="learn">Learn</label>
     <input type="radio" id="practice" name="mode" value="practice">
     <label for="practice">Practice</label>
 </div>
+
 
 <div class="flashcard">
     <div class="card-content">

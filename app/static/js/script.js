@@ -66,4 +66,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    const tabs = document.querySelectorAll('.tab-link');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            // Remove 'selected' class from all tabs
+            tabs.forEach(innerTab => innerTab.classList.remove('selected'));
+
+            // Add 'selected' class to the clicked tab
+            tab.classList.add('selected');
+        });
+    });
+
 });
