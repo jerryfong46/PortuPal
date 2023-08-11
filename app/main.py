@@ -68,13 +68,6 @@ def index():
     )
 
 
-@app.route("/")
-@app.route("/home")
-def homepage():
-    # Your logic for the home page, for example, displaying stats
-    return render_template("home.html")
-
-
 @app.route("/flashcards")
 def flashcards_page():
     # Your logic for the flashcards
@@ -103,28 +96,23 @@ def mark_as_difficult():
 
     # Your data, for example
     data = {
-        "userID": [userID],
-        "wordID": [wordID],
+        "user_id": [userID],
+        "word_id": [wordID],
         "difficulty_weight": [DIFFICULT_WEIGHT],
     }
     new_row_df = pd.DataFrame(data)
 
     # 1. Read the existing CSV into a DataFrame
-    file_path = "data/difficult_words.csv"
+    file_path = "data/user/difficult_words.csv"
     if not pd.io.common.file_exists(file_path):
         # If the file doesn't exist, create an empty DataFrame with the same columns
-        existing_df = pd.DataFrame(columns=["userID", "wordID", "difficulty_weight"])
+        existing_df = pd.DataFrame(columns=["user_id", "word_id", "difficulty_weight"])
     else:
         existing_df = pd.read_csv(file_path)
 
-    # 2. Check if the combination of userID and wordID already exists
-    exists = (
-        existing_df[
-            (existing_df["userID"] == new_row_df["userID"][0])
-            & (existing_df["wordID"] == new_row_df["wordID"][0])
-        ].shape[0]
-        > 0
-    )
+    # Check if the combination of userID and wordID already exists
+    mask = (existing_df["user_id"] == userID) & (existing_df["word_id"] == wordID)
+    exists = existing_df[mask].any().any()
 
     # 3. If the combination doesn't exist, append the new row
     if not exists:

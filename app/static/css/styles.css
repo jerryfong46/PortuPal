@@ -158,3 +158,36 @@ body {
 .toggle-container input[type="radio"]:checked+label {
     background-color: #ddd;
 }
+
+.custom-alert {
+    position: fixed;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 9999;
+    /* This ensures the alert stays on top of other elements */
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    /* This is to fade the alert out */
+}
+
+.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.parent-container {
+    /* You can replace 'parent-container' with whatever class or id your main container has, or you can add this class to your main container. */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* This will center its children horizontally. */
+    justify-content: center;
+    /* This will center its children vertically. */
+    height: 100vh;
+    /* Takes up the full viewport height. */
+}

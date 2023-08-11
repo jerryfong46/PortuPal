@@ -12,30 +12,46 @@
         background-color: white;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
+
+    body {
+        height: 100vh;
+        /* 100% of the viewport height */
+        overflow-y: hidden;
+        /* Disables vertical scrolling */
+    }
 </style>
 
-<div class="toggle-container">
-    <input type="radio" id="learn" name="mode" value="learn">
-    <label for="learn">Learn</label>
-    <input type="radio" id="practice" name="mode" value="practice" checked>
-    <label for="practice">Practice</label>
-</div>
-
-
-<div class="flashcard">
-    <div class="card-content">
-        <p id="word-display">Press 'Enter' to start!</p>
-        <p id="sentence-display"></p> <!-- This is the new element for displaying the sentence -->
+<div class="parent-container">
+    <div id="customAlert" class="custom-alert hidden">
+        Word added to difficult words!
     </div>
 
-</div>
+    <div class="toggle-container">
+        <input type="radio" id="learn" name="mode" value="learn">
+        <label for="learn">Learn</label>
+        <input type="radio" id="practice" name="mode" value="practice" checked>
+        <label for="practice">Practice</label>
+    </div>
 
-<div class="button-container">
-    <button id="flip-btn" class="control-btn">Flip</button>
-    <button id="next-btn" class="control-btn secondary-btn">Next</button>
+    <div class="flashcard">
+        <div class="card-content">
+            <p id="word-display">Right arrow key to start.</p>
+            <p id="sentence-display"></p> <!-- This is the new element for displaying the sentence -->
+        </div>
+
+    </div>
+
+    <div class="button-container">
+        <button id="flip-btn" class="control-btn">Flip</button>
+        <button id="next-btn" class="control-btn secondary-btn">Next</button>
+    </div>
+
+    <canvas id="myChart" width="400" height="200"></canvas>
+
 </div>
 
 <!-- Include your JavaScript at the end of the body -->
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
 
 {% endblock %}

@@ -38,6 +38,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function markWordAsDifficult() {
         let display = document.getElementById('word-display');
         let currentWordId = display.dataset.wordID; // Assuming you've stored the wordId in the dataset
+        let currentWord = display.textContent;
+
+        // Show alert
+        showAlert(currentWord);
 
         // Skip if there's no word displayed
         if (!currentWordId) return;
@@ -62,6 +66,21 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => {
                 console.error('There was an error:', error);
             });
+    }
+
+    function showAlert(word) {
+        let customAlert = document.getElementById('customAlert');
+
+        // Update the alert message with the word
+        customAlert.innerHTML = `<strong>${word.toUpperCase()}</strong> added to difficult words!`;
+
+        // Remove hidden class to display the alert
+        customAlert.classList.remove('hidden');
+
+        // Use setTimeout to add the hidden class after 0.5 seconds
+        setTimeout(() => {
+            customAlert.classList.add('hidden');
+        }, 1000);
     }
 
 
@@ -96,6 +115,43 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('flip-btn').click();
         } else if (event.code === "Enter") {
             markWordAsDifficult();
+        }
+    });
+
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+
+    // Sample data
+    var dates = ["2023-08-01", "2023-08-02", "2023-08-03"];  // X-axis data
+    var learnedWords = [5, 10, 15];  // Y-axis data
+
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Total Learned Words',
+                data: learnedWords,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.3  // This gives the soft curves
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        displayFormats: {
+                            day: 'MMM D'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
         }
     });
 
