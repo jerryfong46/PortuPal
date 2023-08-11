@@ -1,10 +1,11 @@
 from flask import Flask, render_template, jsonify, request
 
 import random
+import numpy as np
 import csv
 import os
 import pandas as pd
-import datetime
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -41,7 +42,9 @@ def index():
     )  # number of unique words learned
 
     # Calculate words learned today
-    today = datetime.date.today().isoformat()  # Get today's date in YYYY-MM-DD format
+    today = datetime.today().strftime(
+        "%Y-%m-%d"
+    )  # Get today's date in YYYY-MM-DD formatsss\\\
     words_reviewed = len(
         learned_words_df[learned_words_df["date_last_accessed"] == today]
     )
@@ -90,6 +93,53 @@ def stories_page():
     return render_template("stories.html")
 
 
+@app.route("/mark-as-difficult", methods=["POST"])
+def mark_as_difficult():
+    userID = 1  # hardcoded user ID for now
+    DIFFICULT_WEIGHT = 1.5  # hardcoded difficulty weight for now
+
+    data = request.json
+    wordID = data.get("wordID")
+
+    # Your data, for example
+    data = {
+        "userID": [userID],
+        "wordID": [wordID],
+        "difficulty_weight": [DIFFICULT_WEIGHT],
+    }
+    new_row_df = pd.DataFrame(data)
+
+    # 1. Read the existing CSV into a DataFrame
+    file_path = "data/difficult_words.csv"
+    if not pd.io.common.file_exists(file_path):
+        # If the file doesn't exist, create an empty DataFrame with the same columns
+        existing_df = pd.DataFrame(columns=["userID", "wordID", "difficulty_weight"])
+    else:
+        existing_df = pd.read_csv(file_path)
+
+    # 2. Check if the combination of userID and wordID already exists
+    exists = (
+        existing_df[
+            (existing_df["userID"] == new_row_df["userID"][0])
+            & (existing_df["wordID"] == new_row_df["wordID"][0])
+        ].shape[0]
+        > 0
+    )
+
+    # 3. If the combination doesn't exist, append the new row
+    if not exists:
+        updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
+
+        # 4. Write the updated DataFrame back to the difficult_words.csv
+        updated_df.to_csv(file_path, index=False)
+    else:
+        print("The combination of userID and wordID already exists.")
+
+    # Add your logic to write the wordId to difficult_words.csv
+
+    return jsonify(status="success", message="Word marked as difficult.")
+
+
 @app.route("/get-random-word", methods=["GET"])
 def get_random_word():
     USER_ID = 1  # hardcoded user ID for now
@@ -109,12 +159,13 @@ def get_random_word():
 
     if mode == "practice":
         # Filter the main dictionary to get only learned words
-        practiced_words = all_words[all_words["wordID"].isin(learned_word_ids)]
-        chosen_word = random.choice(practiced_words.to_dict("records"))
+        chosen_word_id = get_random_word_by_weight(USER_ID)
+        chosen_word = all_words[all_words["wordID"].isin([chosen_word_id])].to_dict(
+            "records"
+        )[0]
 
         # Update date_last_accessed for the chosen word
         update_last_accessed_date(USER_ID, chosen_word["wordID"])
-
         return jsonify(chosen_word)
 
     else:  # mode == 'learn'
@@ -127,8 +178,69 @@ def get_random_word():
     return jsonify({"message": "No new words to learn."})
 
 
+def get_random_word_by_weight(USER_ID):
+    # Read the learned words
+    learned_words_df = pd.read_csv("data/user/learned_words.csv")
+    learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+
+    # Convert columns to datetime objects
+    learned_words_df["date_first_accessed"] = pd.to_datetime(
+        learned_words_df["date_first_accessed"]
+    )
+    learned_words_df["date_last_accessed"] = pd.to_datetime(
+        learned_words_df["date_last_accessed"]
+    )
+
+    # Calculate the number of days since first and last accessed
+    today = datetime.today()
+    learned_words_df["days_since_first_accessed"] = (
+        today - learned_words_df["date_first_accessed"]
+    ).dt.days + 1
+    learned_words_df["days_since_last_accessed"] = (
+        today - learned_words_df["date_last_accessed"]
+    ).dt.days + 1
+
+    # Generate weights
+    # We inverse the days_since_first_accessed because newer words should have higher weights.
+    learned_words_df["weight_first_accessed"] = (
+        1 / learned_words_df["days_since_first_accessed"]
+    )
+    learned_words_df["weight_last_accessed"] = learned_words_df[
+        "days_since_last_accessed"
+    ]
+
+    # Merge with difficult words
+    difficult_words_df = pd.read_csv("data/user/difficult_words.csv")
+    difficult_words_df = difficult_words_df[difficult_words_df["user_id"] == USER_ID]
+    learned_words_df = pd.merge(
+        learned_words_df,
+        difficult_words_df[["word_id", "difficulty_weight"]],
+        on="word_id",
+        how="left",
+    )
+    learned_words_df["difficulty_weight"] = learned_words_df[
+        "difficulty_weight"
+    ].fillna(
+        1
+    )  # Fill NaNs with 1 (baseline weight)
+
+    # Calculate the final weight
+    learned_words_df["final_weight"] = (
+        learned_words_df["weight_first_accessed"]
+        * learned_words_df["weight_last_accessed"]
+        * learned_words_df["difficulty_weight"]
+    )
+
+    # Sample a word based on the final weight
+    chosen_word_id = np.random.choice(
+        learned_words_df["word_id"],
+        p=learned_words_df["final_weight"] / learned_words_df["final_weight"].sum(),
+    )
+    return chosen_word_id
+
+
 def update_last_accessed_date(user_id, word_id):
-    today = datetime.date.today().isoformat()
+    today = datetime.today().strftime("%Y-%m-%d")
     learned_words_df = pd.read_csv("data/user/learned_words.csv")
 
     # Update last_accessed date for the word
@@ -141,7 +253,9 @@ def update_last_accessed_date(user_id, word_id):
 
 
 def add_learned_word(user_id, word_id):
-    today = datetime.date.today().isoformat()  # Get today's date in YYYY-MM-DD format
+    today = datetime.today().strftime(
+        "%Y-%m-%d"
+    )  # Get today's date in YYYY-MM-DD format
     try:
         learned_words_df = pd.read_csv("data/user/learned_words.csv")
 

@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // Variables
-    let currentMode = 'learn';
+    let currentMode = 'practice';
 
     // Event listeners for the mode toggles
     document.getElementById('learn').addEventListener('click', function () {
@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 display.dataset.english = data.english;
                 display.dataset.portuguese = data.portuguese;
+                display.dataset.wordID = data.wordID; // Store wordId data
                 display.dataset.sentence = data.sentence; // Store sentence data
 
                 display.textContent = data.english;
@@ -33,6 +34,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('There was an error fetching the word:', error);
             });
     }
+
+    function markWordAsDifficult() {
+        let display = document.getElementById('word-display');
+        let currentWordId = display.dataset.wordID; // Assuming you've stored the wordId in the dataset
+
+        // Skip if there's no word displayed
+        if (!currentWordId) return;
+
+        // Call backend endpoint to add wordId to difficult_words.csv
+        fetch('/mark-as-difficult', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ wordID: currentWordId })
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Maybe display a message that word was added successfully
+                if (data.status === "success") {
+                    console.log("Word marked as difficult");
+                } else {
+                    console.error("There was an error marking the word as difficult:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error('There was an error:', error);
+            });
+    }
+
 
     document.getElementById('flip-btn').addEventListener('click', function () {
         let display = document.getElementById('word-display');
@@ -63,20 +94,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (event.code === "ArrowDown") {
             // Trigger the flip button's click event
             document.getElementById('flip-btn').click();
+        } else if (event.code === "Enter") {
+            markWordAsDifficult();
         }
     });
 
-    const tabs = document.querySelectorAll('.tab-link');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function (event) {
-            event.preventDefault();
-
-            // Remove 'selected' class from all tabs
-            tabs.forEach(innerTab => innerTab.classList.remove('selected'));
-
-            // Add 'selected' class to the clicked tab
-            tab.classList.add('selected');
-        });
-    });
 
 });
