@@ -1,5 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Event listener for the right arrow key
+    document.addEventListener('keydown', function (event) {
+        if (event.code === "ArrowRight") {
+            fetchNewWord();
+        } else if (event.code === "ArrowDown") {
+            // Trigger the flip button's click event
+            document.getElementById('flip-btn').click();
+        } else if (event.code === "Enter") {
+            markWordAsDifficult();
+        }
+    });
+
     // Variables
     let currentMode = 'practice';
 
@@ -83,10 +95,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 1000);
     }
 
-
     document.getElementById('flip-btn').addEventListener('click', function () {
         let display = document.getElementById('word-display');
         let sentenceDisplay = document.getElementById('sentence-display');
+        alert('HELLO')
 
         if (display.textContent === "Press 'Enter' to start!" || !display.dataset.english) {
             fetchNewWord();
@@ -105,40 +117,5 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('next-btn').addEventListener('click', function () {
         fetchNewWord();
     });
-
-    // Event listener for the right arrow key
-    document.addEventListener('keydown', function (event) {
-        if (event.code === "ArrowRight") {
-            fetchNewWord();
-        } else if (event.code === "ArrowDown") {
-            // Trigger the flip button's click event
-            document.getElementById('flip-btn').click();
-        } else if (event.code === "Enter") {
-            markWordAsDifficult();
-        }
-    });
-
-    document.getElementById("new-story-btn").addEventListener("click", function () {
-        const selectedGenre = document.getElementById("story-type").value;
-        alert(selectedGenre)
-
-
-        fetch('/generate_story', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                genre: selectedGenre
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("english-story").textContent = data.english_story;
-                document.getElementById("portuguese-story").textContent = data.portuguese_story;
-            });
-    });
-
-
 
 });

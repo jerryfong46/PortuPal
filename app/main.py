@@ -6,8 +6,69 @@ import csv
 import os
 import pandas as pd
 from datetime import datetime
+import requests
+import openai
 
 app = Flask(__name__)
+
+
+def get_keys():
+    # Define the path to the file containing API keys and descriptions
+    api_key_file = os.path.join("config", "api_keys.txt")
+
+    # Read the file and split the lines by newline
+    with open(api_key_file, "r") as f:
+        api_key_lines = f.read().split("\n")
+
+    # Parse the lines into a dictionary
+    api_keys = {}
+    for line in api_key_lines:
+        if line.strip():
+            key_description, api_key = line.split()
+            api_keys[key_description.strip("[]")] = api_key
+
+    # API Keys
+    openai.api_key = api_keys["openai"]
+
+
+def create_story(genre, user_id):
+    user_id = 1
+
+    learned_words_df = pd.read_csv("data/user/learned_words.csv")
+    learned_words_df = learned_words_df[learned_words_df["user_id"] == user_id]
+    all_words = pd.read_csv("data/raw/dictionary/words.csv")
+    usable_words_list = list(
+        all_words[all_words["wordID"].isin(learned_words_df["word_id"])]["lemma"]
+    )
+
+    prompt = f"""You are to write a captivating short story in the following genre: {genre}. \n\n
+        Keep it to 100 words or less. The reading comprehension level should be that of a 3 year old. Write it in present tense. \n\n 
+        The story should be comprised primarily (over 95%) of the following words and their conjugations: [{', '.join(usable_words_list)}] \n\n 
+        Write the English version first, followed by the Brazilian Portuguese version. Separate the two with ***.
+        """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a professional translator and best-selling author.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=750,
+        n=1,
+        stop=None,
+        temperature=1.0,
+    )
+
+    print("creating story...")
+    response_story = response.choices[0]["message"]["content"]
+    english_story = response_story.split("***")[0].strip()
+    portuguese_story = response_story.split("***")[1].strip()
+    print("story created!")
+
+    return english_story, portuguese_story
 
 
 def read_csv(file_path):
@@ -301,13 +362,16 @@ def mark_as_learned(wordID):
 
 @app.route("/generate_story", methods=["POST"])
 def generate_story():
+    get_keys()
+    USER_ID = 1  # Replace with your actual user id
+
     data = request.json
     genre = data.get("genre")
-    print(genre)
 
-    # Here you would have the logic to generate the stories for each language based on the genre.
-    english_story = "Some English story based on genre"  # Replace with your actual story generation logic
-    portuguese_story = "Some Portuguese story based on genre"  # Replace with your actual story generation logic
+    # Logic to generate the stories for each language based on the genre.
+    stories = create_story(genre, USER_ID)
+    english_story = stories[0]
+    portuguese_story = stories[1]
 
     return jsonify(
         {"english_story": english_story, "portuguese_story": portuguese_story}
