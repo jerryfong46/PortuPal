@@ -118,42 +118,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    document.getElementById("new-story-btn").addEventListener("click", function () {
+        const selectedGenre = document.getElementById("story-type").value;
+        alert(selectedGenre)
 
-    var ctx = document.getElementById('myChart').getContext('2d');
 
-    // Sample data
-    var dates = ["2023-08-01", "2023-08-02", "2023-08-03"];  // X-axis data
-    var learnedWords = [5, 10, 15];  // Y-axis data
-
-    var chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: [{
-                label: 'Total Learned Words',
-                data: learnedWords,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.3  // This gives the soft curves
-            }]
-        },
-        options: {
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day',
-                        displayFormats: {
-                            day: 'MMM D'
-                        }
-                    }
-                },
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
+        fetch('/generate_story', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                genre: selectedGenre
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("english-story").textContent = data.english_story;
+                document.getElementById("portuguese-story").textContent = data.portuguese_story;
+            });
     });
+
 
 
 });

@@ -299,5 +299,20 @@ def mark_as_learned(wordID):
     return jsonify({"status": "success", "learned": wordID})
 
 
+@app.route("/generate_story", methods=["POST"])
+def generate_story():
+    data = request.json
+    genre = data.get("genre")
+    print(genre)
+
+    # Here you would have the logic to generate the stories for each language based on the genre.
+    english_story = "Some English story based on genre"  # Replace with your actual story generation logic
+    portuguese_story = "Some Portuguese story based on genre"  # Replace with your actual story generation logic
+
+    return jsonify(
+        {"english_story": english_story, "portuguese_story": portuguese_story}
+    )
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

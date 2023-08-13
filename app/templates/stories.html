@@ -2,4 +2,38 @@
 
 {% block content %}
 
+<div class="story-type-container">
+    <h2>Select a Story Genre:</h2>
+    <select id="story-type">
+        <option value="adventure">Adventure</option>
+        <option value="mystery">Mystery</option>
+        <option value="fantasy">Fantasy</option>
+        <option value="romance">Romance</option>
+        <option value="sci-fi">Science Fiction</option>
+        <option value="horror">Horror</option>
+    </select>
+</div>
+
+<!-- Story Sections and Buttons -->
+<div class="stories-container">
+    <!-- English Story Section -->
+    <div class="story-section" id="english-story">
+        <!-- English story content goes here -->
+    </div>
+
+    <!-- Portuguese Story Section -->
+    <div class="story-section" id="portuguese-story">
+        <!-- Portuguese story content goes here -->
+    </div>
+
+    <!-- Buttons to the right -->
+    <div class="buttons-container">
+        <button id="continue-btn">Continue</button>
+        <button id="new-story-btn">New Story</button>
+    </div>
+</div>
+
+<!-- Include your JavaScript at the end of the body -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
 {% endblock %}
