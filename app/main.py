@@ -31,46 +31,6 @@ def get_keys():
     openai.api_key = api_keys["openai"]
 
 
-def create_story(genre, user_id):
-    user_id = 1
-
-    learned_words_df = pd.read_csv("data/user/learned_words.csv")
-    learned_words_df = learned_words_df[learned_words_df["user_id"] == user_id]
-    all_words = pd.read_csv("data/raw/dictionary/words.csv")
-    usable_words_list = list(
-        all_words[all_words["wordID"].isin(learned_words_df["word_id"])]["lemma"]
-    )
-
-    prompt = f"""You are to write a captivating short story in the following genre: {genre}. \n\n
-        Keep it to 100 words or less. The reading comprehension level should be that of a 3 year old. Write it in present tense. \n\n 
-        The story should be comprised primarily (over 95%) of the following words and their conjugations: [{', '.join(usable_words_list)}] \n\n 
-        Write the English version first, followed by the Brazilian Portuguese version. Separate the two with ***.
-        """
-
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a professional translator and best-selling author.",
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=750,
-        n=1,
-        stop=None,
-        temperature=1.0,
-    )
-
-    print("creating story...")
-    response_story = response.choices[0]["message"]["content"]
-    english_story = response_story.split("***")[0].strip()
-    portuguese_story = response_story.split("***")[1].strip()
-    print("story created!")
-
-    return english_story, portuguese_story
-
-
 def read_csv(file_path):
     words = []
     with open(file_path, "r", encoding="utf-8") as f:
@@ -150,7 +110,7 @@ def stories_page():
 @app.route("/mark-as-difficult", methods=["POST"])
 def mark_as_difficult():
     userID = 1  # hardcoded user ID for now
-    DIFFICULT_WEIGHT = 1.5  # hardcoded difficulty weight for now
+    DIFFICULT_WEIGHT = 2  # hardcoded difficulty weight for now
 
     data = request.json
     wordID = data.get("wordID")
@@ -202,9 +162,23 @@ def get_random_word():
 
     # Retrieve words from the main dictionary
     all_words = pd.read_csv("data/raw/dictionary/words.csv")
-    cols = ["wordID", "lemma", "Portuguese", "Sentence"]
+    cols = [
+        "wordID",
+        "lemma",
+        "Portuguese",
+        "Sentence",
+        "port_sentence",
+        "eng_sentence",
+    ]
     all_words = all_words[cols]
-    all_words.columns = ["wordID", "english", "portuguese", "sentence"]
+    all_words.columns = [
+        "wordID",
+        "english",
+        "portuguese",
+        "sentence",
+        "port_sentence",
+        "eng_sentence",
+    ]
 
     if mode == "practice":
         # Filter the main dictionary to get only learned words
@@ -215,6 +189,7 @@ def get_random_word():
 
         # Update date_last_accessed for the chosen word
         update_last_accessed_date(USER_ID, chosen_word["wordID"])
+        print(chosen_word)
         return jsonify(chosen_word)
 
     else:  # mode == 'learn'
@@ -369,7 +344,7 @@ def generate_story():
     genre = data.get("genre")
 
     # Logic to generate the stories for each language based on the genre.
-    stories = create_story(genre, USER_ID)
+    stories = create_story(genre, USER_ID, "")  # blank for current story
     english_story = stories[0]
     portuguese_story = stories[1]
 
@@ -378,5 +353,71 @@ def generate_story():
     )
 
 
+@app.route("/continue-story", methods=["POST"])
+def continue_story():
+    get_keys()
+    USER_ID = 1  # Replace with your actual user id
+
+    data = request.json
+    current_story = request.json.get("story")
+    genre = request.json.get("genre")
+
+    # Logic to generate the stories for each language based on the genre.
+    stories = create_story(genre, USER_ID, current_story)
+    english_story = stories[0]
+    portuguese_story = stories[1]
+
+    return jsonify(
+        {"english_story": english_story, "portuguese_story": portuguese_story}
+    )
+
+
+def create_story(genre, user_id, back_story):
+    user_id = 1
+
+    learned_words_df = pd.read_csv("data/user/learned_words.csv")
+    learned_words_df = learned_words_df[learned_words_df["user_id"] == user_id]
+    all_words = pd.read_csv("data/raw/dictionary/words.csv")
+    usable_words_list = list(
+        all_words[all_words["wordID"].isin(learned_words_df["word_id"])]["lemma"]
+    )
+
+    # If story exists, continue story
+    if back_story == "None":
+        back_story = f"Write the first chapter of an exciting novel."
+    else:
+        back_story = f"Here is the previous chapter of the novel: \n\n + {back_story} \n\n + Write the next chapter."
+
+    prompt = f"""Write the first chapter. \n\n
+        {back_story} \n\n
+        Keep it to 100 words or less. The genre is {genre}. The reading comprehension level should be that of a 5 year old. Write it in present tense. \n\n 
+        The story should be comprised primarily (over 95%) of the following words and their conjugations: [{', '.join(usable_words_list)}] \n\n 
+        Write the English version first, followed by the Brazilian Portuguese version. Separate the two with ***.
+        """
+
+    print(prompt)
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a professional translator and best-selling author.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=750,
+        n=1,
+        stop=None,
+        temperature=1.0,
+    )
+
+    response_story = response.choices[0]["message"]["content"]
+    english_story = response_story.split("***")[0].strip()
+    portuguese_story = response_story.split("***")[1].strip()
+
+    return english_story, portuguese_story
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5000)

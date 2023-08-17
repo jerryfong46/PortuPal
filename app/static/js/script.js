@@ -38,9 +38,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 display.dataset.portuguese = data.portuguese;
                 display.dataset.wordID = data.wordID; // Store wordId data
                 display.dataset.sentence = data.sentence; // Store sentence data
+                display.dataset.eng_sentence = data.eng_sentence;  // Set the English sentence
+                display.dataset.port_sentence = data.port_sentence;  // Set the Portuguese sentence
 
                 display.textContent = data.english;
-                sentenceDisplay.textContent = ''; // Clear sentence initially
+                sentenceDisplay.textContent = data.eng_sentence;
+                // sentenceDisplay.textContent = ''; // Clear sentence initially
             })
             .catch(error => {
                 console.error('There was an error fetching the word:', error);
@@ -98,20 +101,20 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('flip-btn').addEventListener('click', function () {
         let display = document.getElementById('word-display');
         let sentenceDisplay = document.getElementById('sentence-display');
-        alert('HELLO')
 
         if (display.textContent === "Press 'Enter' to start!" || !display.dataset.english) {
             fetchNewWord();
         } else {
             if (display.textContent === display.dataset.english) {
                 display.textContent = display.dataset.portuguese;
-                sentenceDisplay.textContent = display.dataset.sentence;  // Show the sentence
+                sentenceDisplay.textContent = display.dataset.port_sentence;  // Show the Portuguese sentence
             } else {
                 display.textContent = display.dataset.english;
-                sentenceDisplay.textContent = '';  // Clear the sentence when showing English word
+                sentenceDisplay.textContent = display.dataset.eng_sentence;  // Show the English sentence
             }
         }
     });
+
 
     // Event listener for the next button
     document.getElementById('next-btn').addEventListener('click', function () {
