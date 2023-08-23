@@ -1,5 +1,30 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    const timeframeButton = document.getElementById('timeframe-toggle');
+
+    document.getElementById('timeframe-toggle').addEventListener('click', function () {
+        const toggleBtn = document.getElementById('timeframe-toggle');
+        if (toggleBtn.innerText === 'All') {
+            toggleBtn.innerText = '3D';
+        } else {
+            toggleBtn.innerText = 'All';
+        }
+        // fetchNewWord();  // Fetch a new word based on the new timeframe
+    });
+
+    document.getElementById('learn').addEventListener('click', function () {
+        currentMode = 'learn';
+        timeframeButton.style.display = 'none';  // Hide the button when in 'Learn' mode
+        fetchNewWord();
+    });
+
+    document.getElementById('practice').addEventListener('click', function () {
+        currentMode = 'practice';
+        timeframeButton.style.display = 'block'; // Show the button when in 'Practice' mode
+        fetchNewWord();
+    });
+
+
     // Fetch words learned data from Flask backend
     function fetchWordsLearnedData() {
         fetch('/get-words-learned-data')

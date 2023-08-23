@@ -11,6 +11,7 @@
         margin-bottom: 30px;
         background-color: white;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        position: relative;
     }
 
     body {
@@ -18,6 +19,44 @@
         /* 100% of the viewport height */
         overflow-y: hidden;
         /* Disables vertical scrolling */
+    }
+
+    .practice-options {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .practice-options label {
+        margin-right: 10px;
+    }
+
+    .timeframe-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        /* This makes it circular */
+        background-color: #e0e0e0;
+        /* A soft gray color */
+        color: #555;
+        border: none;
+        /* Remove default borders */
+        outline: none;
+        /* Remove focus outline */
+        cursor: pointer;
+        /* Indicates it's clickable */
+        transition: background-color 0.3s, box-shadow 0.3s;
+        /* Smooth transition */
+    }
+
+    .timeframe-btn:hover {
+        background-color: #d0d0d0;
+        /* Slightly darker gray on hover */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        /* A subtle shadow for depth */
     }
 </style>
 
@@ -31,6 +70,7 @@
         <label for="learn">Learn</label>
         <input type="radio" id="practice" name="mode" value="practice" checked>
         <label for="practice">Practice</label>
+
     </div>
 
     <div class="flashcard">
@@ -38,6 +78,8 @@
             <p id="word-display">Right arrow key to start.</p>
             <p id="sentence-display"></p> <!-- This is the new element for displaying the sentence -->
         </div>
+        <!-- Toggle button -->
+        <button id="timeframe-toggle" class="timeframe-btn">All</button>
 
     </div>
 
