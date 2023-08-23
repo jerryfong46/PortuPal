@@ -1,5 +1,44 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Fetch words learned data from Flask backend
+    function fetchWordsLearnedData() {
+        fetch('/get-words-learned-data')
+            .then(response => response.json())
+            .then(data => {
+                createChart(data);
+            })
+            .catch(error => {
+                console.error('There was an error fetching the words learned data:', error);
+            });
+    }
+
+    // Create the chart with the fetched data
+    function createChart(data) {
+        const ctx = document.getElementById('wordsLearnedChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => item.date),  // Date will be on x-axis
+                datasets: [{
+                    label: 'Total Words Learned',
+                    data: data.map(item => item.wordsLearned), // wordsLearned will be on y-axis
+                    borderColor: '#007BFF',
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    fetchWordsLearnedData();
+
+
     // Event listener for the right arrow key
     document.addEventListener('keydown', function (event) {
         if (event.code === "ArrowRight") {

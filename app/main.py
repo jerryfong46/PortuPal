@@ -12,6 +12,26 @@ import openai
 app = Flask(__name__)
 
 
+@app.route("/get-words-learned-data", methods=["GET"])
+def get_words_learned_data():
+    USER_ID = 1
+
+    # Calculate learned words
+    learned_words_df = pd.read_csv("data/user/learned_words.csv")
+    learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+    cumulative_learned = (
+        learned_words_df.groupby("date_first_accessed")
+        .agg({"word_id": "count"})
+        .reset_index()
+        .rename({"word_id": "wordsLearnedDay"}, axis=1)
+    )
+    cumulative_learned["wordsLearned"] = cumulative_learned["wordsLearnedDay"].cumsum()
+    cumulative_learned["date"] = cumulative_learned["date_first_accessed"]
+    data = cumulative_learned[["date", "wordsLearned"]].to_dict("records")
+
+    return jsonify(data)
+
+
 def get_keys():
     # Define the path to the file containing API keys and descriptions
     api_key_file = os.path.join("config", "api_keys.txt")
