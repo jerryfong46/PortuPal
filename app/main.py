@@ -5,7 +5,7 @@ import numpy as np
 import csv
 import os
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import openai
 
@@ -174,10 +174,12 @@ def get_random_word():
     USER_ID = 1  # hardcoded user ID for now
 
     mode = request.args.get("mode", "practice")  # default mode is 'practice'
+    timeframe = request.args.get("timeframe", default="All", type=str)
 
     # Read the learned words
     learned_words_df = pd.read_csv("data/user/learned_words.csv")
     learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+
     learned_word_ids = learned_words_df["word_id"].tolist()
 
     # Retrieve words from the main dictionary
@@ -202,7 +204,7 @@ def get_random_word():
 
     if mode == "practice":
         # Filter the main dictionary to get only learned words
-        chosen_word_id = get_random_word_by_weight(USER_ID)
+        chosen_word_id = get_random_word_by_weight(USER_ID, timeframe)
         chosen_word = all_words[all_words["wordID"].isin([chosen_word_id])].to_dict(
             "records"
         )[0]
@@ -222,10 +224,15 @@ def get_random_word():
     return jsonify({"message": "No new words to learn."})
 
 
-def get_random_word_by_weight(USER_ID):
+def get_random_word_by_weight(USER_ID, timeframe):
     # Read the learned words
     learned_words_df = pd.read_csv("data/user/learned_words.csv")
     learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+
+    if timeframe == "15":  # Filter
+        learned_words_df = learned_words_df.sort_values(
+            by="date_first_accessed", ascending=False
+        )[0:15]
 
     # Convert columns to datetime objects
     learned_words_df["date_first_accessed"] = pd.to_datetime(

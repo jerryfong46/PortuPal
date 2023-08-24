@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('timeframe-toggle').addEventListener('click', function () {
         const toggleBtn = document.getElementById('timeframe-toggle');
         if (toggleBtn.innerText === 'All') {
-            toggleBtn.innerText = '3D';
+            toggleBtn.innerText = '15';
         } else {
             toggleBtn.innerText = 'All';
         }
@@ -93,7 +93,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchNewWord() {
         let display = document.getElementById('word-display');
         let sentenceDisplay = document.getElementById('sentence-display');  // Assuming you'll have a dedicated element for the sentence
-        let endpoint = '/get-random-word' + '?mode=' + currentMode;
+        let timeframe = document.getElementById('timeframe-toggle').textContent; // Get the current value of the toggle
+
+        let endpoint = '/get-random-word' + '?mode=' + currentMode + '&timeframe=' + timeframe;
 
         fetch(endpoint)
             .then(response => response.json())
