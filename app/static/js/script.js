@@ -39,30 +39,53 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Create the chart with the fetched data
     function createChart(data) {
         const ctx = document.getElementById('wordsLearnedChart').getContext('2d');
-        alert('here')
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',  // This can be a 'bar' type to show bars for daily learned words
             data: {
                 labels: data.map(item => item.date),  // Date will be on x-axis
                 datasets: [{
+                    type: 'line',  // This will force this dataset to be line type
                     label: 'Total Words Learned',
-                    data: data.map(item => item.wordsLearned), // wordsLearned will be on y-axis
+                    data: data.map(item => item.wordsLearned),
                     borderColor: '#007BFF',
-                    fill: false
+                    fill: false,
+                    yAxisID: 'y-axis-1'
+                }, {
+                    type: 'bar', // This will force this dataset to be bar type
+                    label: 'Words Learned Daily',
+                    data: data.map(item => item.wordsLearnedDay),  // Assuming you have this in your data
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    yAxisID: 'y-axis-2'
                 }]
             },
             options: {
                 scales: {
-                    y: {
+                    'y-axis-1': {
+                        type: 'linear',
+                        position: 'left',
                         beginAtZero: true
+                    },
+                    'y-axis-2': {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: {
+                            drawOnChartArea: false  // ensures that the grid lines of this axis don't show up
+                        }
+                    },
+                    x: {
+                        type: 'category'
                     }
                 }
             }
+
         });
     }
+
+
 
     // Event listener for the right arrow key
     document.addEventListener('keydown', function (event) {

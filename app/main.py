@@ -19,15 +19,34 @@ def get_words_learned_data():
     # Calculate learned words
     learned_words_df = pd.read_csv("data/user/learned_words.csv")
     learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+
+    # Generate a complete date range from the start to the end of your data
+    min_date = learned_words_df["date_first_accessed"].min()
+    max_date = learned_words_df["date_first_accessed"].max()
+    all_dates = pd.DataFrame(
+        {"date_first_accessed": pd.date_range(start=min_date, end=max_date)}
+    )
+    all_dates["date_first_accessed"] = all_dates["date_first_accessed"].dt.strftime(
+        "%Y-%m-%d"
+    )
+
     cumulative_learned = (
         learned_words_df.groupby("date_first_accessed")
         .agg({"word_id": "count"})
         .reset_index()
         .rename({"word_id": "wordsLearnedDay"}, axis=1)
     )
+
+    # Merge with the complete date range
+    cumulative_learned = all_dates.merge(
+        cumulative_learned, on="date_first_accessed", how="left"
+    ).fillna(0)
+
     cumulative_learned["wordsLearned"] = cumulative_learned["wordsLearnedDay"].cumsum()
     cumulative_learned["date"] = cumulative_learned["date_first_accessed"]
-    data = cumulative_learned[["date", "wordsLearned"]].to_dict("records")
+    data = cumulative_learned[["date", "wordsLearned", "wordsLearnedDay"]].to_dict(
+        "records"
+    )
 
     return jsonify(data)
 
