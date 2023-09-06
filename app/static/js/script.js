@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const timeframeButton = document.getElementById('timeframe-toggle');
 
+    fetchWordsLearnedData();  // Fetch the words learned data when the page loads
+
     document.getElementById('timeframe-toggle').addEventListener('click', function () {
         const toggleBtn = document.getElementById('timeframe-toggle');
         if (toggleBtn.innerText === 'All') {
@@ -40,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Create the chart with the fetched data
     function createChart(data) {
         const ctx = document.getElementById('wordsLearnedChart').getContext('2d');
+        alert('here')
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -60,9 +63,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-    fetchWordsLearnedData();
-
 
     // Event listener for the right arrow key
     document.addEventListener('keydown', function (event) {
