@@ -133,6 +133,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 display.textContent = data.english;
                 sentenceDisplay.textContent = data.eng_sentence;
                 // sentenceDisplay.textContent = ''; // Clear sentence initially
+
+                // Add the logic for displaying "Difficult Word" based on 'is_difficult' field
+                if (data.is_difficult) {
+                    const indicator = document.createElement('div');
+                    indicator.classList.add('difficult-indicator');
+                    indicator.textContent = 'Difficult Word';
+                    document.querySelector('.flashcard').appendChild(indicator);
+                } else {
+                    const existingIndicator = document.querySelector('.difficult-indicator');
+                    if (existingIndicator) existingIndicator.remove();
+                }
             })
             .catch(error => {
                 console.error('There was an error fetching the word:', error);
@@ -144,14 +155,11 @@ document.addEventListener('DOMContentLoaded', function () {
         let currentWordId = display.dataset.wordID; // Assuming you've stored the wordId in the dataset
         let currentWord = display.textContent;
 
-        // Show alert
-        showAlert(currentWord);
-
         // Skip if there's no word displayed
         if (!currentWordId) return;
 
-        // Call backend endpoint to add wordId to difficult_words.csv
-        fetch('/mark-as-difficult', {
+        // Call backend endpoint to toggle word difficulty in difficult_words.csv
+        fetch('/toggle-difficulty', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -160,17 +168,21 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
-                // Maybe display a message that word was added successfully
                 if (data.status === "success") {
-                    console.log("Word marked as difficult");
+                    if (data.action === "added") {
+                        showAlert(`"${currentWord}" was marked as difficult`);
+                    } else if (data.action === "removed") {
+                        showAlert(`"${currentWord}" was removed from difficult words`);
+                    }
                 } else {
-                    console.error("There was an error marking the word as difficult:", data.message);
+                    console.error("There was an error toggling the word's difficulty:", data.message);
                 }
             })
             .catch(error => {
                 console.error('There was an error:', error);
             });
     }
+
 
     function showAlert(word) {
         let customAlert = document.getElementById('customAlert');

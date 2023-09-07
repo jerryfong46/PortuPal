@@ -11,6 +11,71 @@ import openai
 
 app = Flask(__name__)
 
+# Helper Functions
+
+
+def is_word_difficult(userID, wordID):
+    """Check if a word is marked as difficult for a user."""
+    userID = int(userID)
+    wordID = int(wordID)
+
+    file_path = "data/user/difficult_words.csv"
+    if not pd.io.common.file_exists(file_path):
+        return False
+    df = pd.read_csv(file_path)
+    return df[(df["user_id"] == userID) & (df["word_id"] == wordID)].any().any()
+
+
+def remove_word_from_difficult(userID, wordID):
+    """Remove a word from the difficult list for a user."""
+    userID = int(userID)
+    wordID = int(wordID)
+
+    file_path = "data/user/difficult_words.csv"
+    df = pd.read_csv(file_path)
+    df = df[~((df["user_id"] == userID) & (df["word_id"] == wordID))]
+    df.to_csv(file_path, index=False)
+
+
+def add_word_to_difficult(userID, wordID, DIFFICULT_WEIGHT=2):
+    """Add a word to the difficult list for a user."""
+    file_path = "data/user/difficult_words.csv"
+    new_row_df = pd.DataFrame(
+        {
+            "user_id": [userID],
+            "word_id": [wordID],
+            "difficulty_weight": [DIFFICULT_WEIGHT],
+        }
+    )
+
+    if not pd.io.common.file_exists(file_path):
+        new_row_df.to_csv(file_path, index=False)
+    else:
+        df = pd.read_csv(file_path)
+        updated_df = pd.concat([df, new_row_df], ignore_index=True)
+        updated_df.to_csv(file_path, index=False)
+
+
+# Endpoint
+@app.route("/toggle-difficulty", methods=["POST"])
+def toggle_difficulty():
+    userID = 1  # hardcoded user ID for now
+    data = request.json
+    wordID = data.get("wordID")
+
+    if is_word_difficult(userID, wordID):
+        remove_word_from_difficult(userID, wordID)
+        return jsonify(
+            status="success",
+            action="removed",
+            message="Word removed from difficult list.",
+        )
+    else:
+        add_word_to_difficult(userID, wordID)
+        return jsonify(
+            status="success", action="added", message="Word marked as difficult."
+        )
+
 
 @app.route("/get-words-learned-data", methods=["GET"])
 def get_words_learned_data():
@@ -146,46 +211,46 @@ def stories_page():
     return render_template("stories.html")
 
 
-@app.route("/mark-as-difficult", methods=["POST"])
-def mark_as_difficult():
-    userID = 1  # hardcoded user ID for now
-    DIFFICULT_WEIGHT = 2  # hardcoded difficulty weight for now
+# @app.route("/mark-as-difficult", methods=["POST"])
+# def mark_as_difficult():
+#     userID = 1  # hardcoded user ID for now
+#     DIFFICULT_WEIGHT = 2  # hardcoded difficulty weight for now
 
-    data = request.json
-    wordID = data.get("wordID")
+#     data = request.json
+#     wordID = data.get("wordID")
 
-    # Your data, for example
-    data = {
-        "user_id": [userID],
-        "word_id": [wordID],
-        "difficulty_weight": [DIFFICULT_WEIGHT],
-    }
-    new_row_df = pd.DataFrame(data)
+#     # Your data, for example
+#     data = {
+#         "user_id": [userID],
+#         "word_id": [wordID],
+#         "difficulty_weight": [DIFFICULT_WEIGHT],
+#     }
+#     new_row_df = pd.DataFrame(data)
 
-    # 1. Read the existing CSV into a DataFrame
-    file_path = "data/user/difficult_words.csv"
-    if not pd.io.common.file_exists(file_path):
-        # If the file doesn't exist, create an empty DataFrame with the same columns
-        existing_df = pd.DataFrame(columns=["user_id", "word_id", "difficulty_weight"])
-    else:
-        existing_df = pd.read_csv(file_path)
+#     # 1. Read the existing CSV into a DataFrame
+#     file_path = "data/user/difficult_words.csv"
+#     if not pd.io.common.file_exists(file_path):
+#         # If the file doesn't exist, create an empty DataFrame with the same columns
+#         existing_df = pd.DataFrame(columns=["user_id", "word_id", "difficulty_weight"])
+#     else:
+#         existing_df = pd.read_csv(file_path)
 
-    # Check if the combination of userID and wordID already exists
-    mask = (existing_df["user_id"] == userID) & (existing_df["word_id"] == wordID)
-    exists = existing_df[mask].any().any()
+#     # Check if the combination of userID and wordID already exists
+#     mask = (existing_df["user_id"] == userID) & (existing_df["word_id"] == wordID)
+#     exists = existing_df[mask].any().any()
 
-    # 3. If the combination doesn't exist, append the new row
-    if not exists:
-        updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
+#     # 3. If the combination doesn't exist, append the new row
+#     if not exists:
+#         updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
 
-        # 4. Write the updated DataFrame back to the difficult_words.csv
-        updated_df.to_csv(file_path, index=False)
-    else:
-        print("The combination of userID and wordID already exists.")
+#         # 4. Write the updated DataFrame back to the difficult_words.csv
+#         updated_df.to_csv(file_path, index=False)
+#     else:
+#         print("The combination of userID and wordID already exists.")
 
-    # Add your logic to write the wordId to difficult_words.csv
+#     # Add your logic to write the wordId to difficult_words.csv
 
-    return jsonify(status="success", message="Word marked as difficult.")
+#     return jsonify(status="success", message="Word marked as difficult.")
 
 
 @app.route("/get-random-word", methods=["GET"])
@@ -197,7 +262,12 @@ def get_random_word():
 
     # Read the learned words
     learned_words_df = pd.read_csv("data/user/learned_words.csv")
+    difficult_words_df = pd.read_csv("data/user/difficult_words.csv")
+
     learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+    difficult_words_df = difficult_words_df[difficult_words_df["user_id"] == USER_ID][
+        "word_id"
+    ].tolist()
 
     learned_word_ids = learned_words_df["word_id"].tolist()
 
@@ -227,6 +297,12 @@ def get_random_word():
         chosen_word = all_words[all_words["wordID"].isin([chosen_word_id])].to_dict(
             "records"
         )[0]
+
+        # Check if chosen word is difficult word
+        if chosen_word_id in difficult_words_df:
+            chosen_word["is_difficult"] = True
+        else:
+            chosen_word["is_difficult"] = False
 
         # Update date_last_accessed for the chosen word
         update_last_accessed_date(USER_ID, chosen_word["wordID"])

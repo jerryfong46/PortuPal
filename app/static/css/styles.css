@@ -262,3 +262,26 @@ body {
     background-color: #e0e0e0;
     color: #333;
 }
+
+.text-center.mt-5 {
+    font-size: 4em;
+    /* Adjust the size as you see fit */
+    font-weight: bold;
+    /* Makes the text thicker */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    /* A subtle text shadow */
+
+    /* A bold color choice, adjust as necessary */
+    font-family: 'Arial', sans-serif;
+    /* Optional: Change the font. Consider importing a custom font from Google Fonts */
+    letter-spacing: 1.5px;
+    /* Increasing spacing between letters can also add to the effect */
+}
+
+.difficult-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: gray;
+    font-weight: bold;
+}
