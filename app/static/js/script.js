@@ -6,13 +6,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('timeframe-toggle').addEventListener('click', function () {
         const toggleBtn = document.getElementById('timeframe-toggle');
-        if (toggleBtn.innerText === 'All') {
-            toggleBtn.innerText = '15';
-        } else {
-            toggleBtn.innerText = 'All';
+        switch (toggleBtn.innerText) {
+            case 'All':
+                toggleBtn.innerText = '15';
+                toggleBtn.setAttribute('title', 'Practice the last 15 words learned');  // Set the tooltip
+                break;
+            case '15':
+                toggleBtn.innerText = 'D';
+                toggleBtn.setAttribute('title', 'Practice only difficult words');  // Set the tooltip
+                break;
+            case 'D':
+                toggleBtn.innerText = 'All';
+                toggleBtn.setAttribute('title', 'Practice all learned words');  // Set the tooltip
+                break;
         }
         // fetchNewWord();  // Fetch a new word based on the new timeframe
     });
+
+
 
     document.getElementById('learn').addEventListener('click', function () {
         currentMode = 'learn';
@@ -188,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let customAlert = document.getElementById('customAlert');
 
         // Update the alert message with the word
-        customAlert.innerHTML = `<strong>${word.toUpperCase()}</strong> added to difficult words!`;
+        customAlert.innerHTML = `<strong>${word.toUpperCase()}</strong>!`;
 
         // Remove hidden class to display the alert
         customAlert.classList.remove('hidden');

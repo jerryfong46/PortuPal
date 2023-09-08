@@ -11,9 +11,8 @@ import openai
 
 app = Flask(__name__)
 
+
 # Helper Functions
-
-
 def is_word_difficult(userID, wordID):
     """Check if a word is marked as difficult for a user."""
     userID = int(userID)
@@ -306,7 +305,6 @@ def get_random_word():
 
         # Update date_last_accessed for the chosen word
         update_last_accessed_date(USER_ID, chosen_word["wordID"])
-        print(chosen_word)
         return jsonify(chosen_word)
 
     else:  # mode == 'learn'
@@ -376,6 +374,14 @@ def get_random_word_by_weight(USER_ID, timeframe):
         * learned_words_df["weight_last_accessed"]
         * learned_words_df["difficulty_weight"]
     )
+
+    if timeframe == "D":  # Filter for only difficult words
+        if learned_words_df["difficulty_weight"].max() > 1:
+            learned_words_df = learned_words_df[
+                learned_words_df["difficulty_weight"] > 1
+            ]
+        else:
+            print("No difficult words found. Returning random word.")
 
     # Sample a word based on the final weight
     chosen_word_id = np.random.choice(
