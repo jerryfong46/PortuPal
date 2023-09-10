@@ -4,6 +4,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     fetchWordsLearnedData();  // Fetch the words learned data when the page loads
 
+    let currentPracticeType = 'vocabulary';  // Default practice type
+
+    document.querySelectorAll('[name="practice-mode"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            currentPracticeType = this.value;
+            fetchNewWord(); // Fetch a new word based on the selected practice type
+        });
+    });
+
+
     document.getElementById('timeframe-toggle').addEventListener('click', function () {
         const toggleBtn = document.getElementById('timeframe-toggle');
         switch (toggleBtn.innerText) {
@@ -27,13 +37,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('learn').addEventListener('click', function () {
         currentMode = 'learn';
-        timeframeButton.style.display = 'none';  // Hide the button when in 'Learn' mode
+        timeframeButton.style.display = 'none';  // Hide the timeframe button when in 'Learn' mode
+        document.getElementById('practice-toggle').style.display = 'none'; // Hide the practice mode toggle
         fetchNewWord();
     });
 
     document.getElementById('practice').addEventListener('click', function () {
         currentMode = 'practice';
-        timeframeButton.style.display = 'block'; // Show the button when in 'Practice' mode
+        timeframeButton.style.display = 'block'; // Show the timeframe button when in 'Practice' mode
+        document.getElementById('practice-toggle').style.display = 'flex'; // Show the practice mode toggle
         fetchNewWord();
     });
 
@@ -129,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let sentenceDisplay = document.getElementById('sentence-display');  // Assuming you'll have a dedicated element for the sentence
         let timeframe = document.getElementById('timeframe-toggle').textContent; // Get the current value of the toggle
 
-        let endpoint = '/get-random-word' + '?mode=' + currentMode + '&timeframe=' + timeframe;
+        let endpoint = '/get-random-word' + '?mode=' + currentMode + '&timeframe=' + timeframe + '&practiceType=' + currentPracticeType;
 
         fetch(endpoint)
             .then(response => response.json())

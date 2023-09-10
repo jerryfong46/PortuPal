@@ -376,11 +376,13 @@ def get_random_word_by_weight(USER_ID, timeframe):
     )
 
     if timeframe == "D":  # Filter for only difficult words
-        if learned_words_df["difficulty_weight"].max() > 1:
+        if (
+            learned_words_df["difficulty_weight"].max() > 1
+        ):  # If difficult words exist, filter for them
             learned_words_df = learned_words_df[
                 learned_words_df["difficulty_weight"] > 1
             ]
-        else:
+        else:  # Random word returned if no difficult words exist
             print("No difficult words found. Returning random word.")
 
     # Sample a word based on the final weight
