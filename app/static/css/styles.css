@@ -291,27 +291,27 @@ body {
     right: -90px;
     top: 15%;
     transform: translateY(-50%);
-    /* display: none; */
     padding: 5px 10px;
-    /* optional: some padding for spacing */
     border-radius: 5px;
-    /* optional: round the corners */
+    display: flex;
+    /* Added flex display */
+    flex-direction: column;
+    /* Stack children vertically */
 }
 
 .toggle-option {
-    display: flex;
     align-items: center;
-    /* align radio and text vertically */
+    /* Align radio and text vertically */
     margin-bottom: 5px;
-    /* space between options */
+    /* Space between options */
 }
 
 .toggle-option:last-child {
     margin-bottom: 0;
-    /* remove margin for the last option */
+    /* Remove margin for the last option */
 }
 
 .toggle-option label {
     margin-left: 5px;
-    /* space between radio button and its label */
+    /* Space between radio button and its label */
 }

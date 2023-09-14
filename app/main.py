@@ -181,6 +181,7 @@ def index():
     # Calculate conversational coverage
     all_words_df = pd.read_csv("data/raw/dictionary/words.csv")
     all_words_df = all_words_df[all_words_df["wordID"].isin(learned_words_list)]
+    all_words_df["perMil"] = all_words_df["perMil"].astype(float)
     spoken_pct = round(all_words_df["perMil"].sum() / 1000000 * 100, 1)
 
     return render_template(
@@ -210,54 +211,13 @@ def stories_page():
     return render_template("stories.html")
 
 
-# @app.route("/mark-as-difficult", methods=["POST"])
-# def mark_as_difficult():
-#     userID = 1  # hardcoded user ID for now
-#     DIFFICULT_WEIGHT = 2  # hardcoded difficulty weight for now
-
-#     data = request.json
-#     wordID = data.get("wordID")
-
-#     # Your data, for example
-#     data = {
-#         "user_id": [userID],
-#         "word_id": [wordID],
-#         "difficulty_weight": [DIFFICULT_WEIGHT],
-#     }
-#     new_row_df = pd.DataFrame(data)
-
-#     # 1. Read the existing CSV into a DataFrame
-#     file_path = "data/user/difficult_words.csv"
-#     if not pd.io.common.file_exists(file_path):
-#         # If the file doesn't exist, create an empty DataFrame with the same columns
-#         existing_df = pd.DataFrame(columns=["user_id", "word_id", "difficulty_weight"])
-#     else:
-#         existing_df = pd.read_csv(file_path)
-
-#     # Check if the combination of userID and wordID already exists
-#     mask = (existing_df["user_id"] == userID) & (existing_df["word_id"] == wordID)
-#     exists = existing_df[mask].any().any()
-
-#     # 3. If the combination doesn't exist, append the new row
-#     if not exists:
-#         updated_df = pd.concat([existing_df, new_row_df], ignore_index=True)
-
-#         # 4. Write the updated DataFrame back to the difficult_words.csv
-#         updated_df.to_csv(file_path, index=False)
-#     else:
-#         print("The combination of userID and wordID already exists.")
-
-#     # Add your logic to write the wordId to difficult_words.csv
-
-#     return jsonify(status="success", message="Word marked as difficult.")
-
-
 @app.route("/get-random-word", methods=["GET"])
 def get_random_word():
     USER_ID = 1  # hardcoded user ID for now
 
     mode = request.args.get("mode", "practice")  # default mode is 'practice'
     timeframe = request.args.get("timeframe", default="All", type=str)
+    practiceType = request.args.get("practiceType", default="vocabulary", type=str)
 
     # Read the learned words
     learned_words_df = pd.read_csv("data/user/learned_words.csv")
@@ -271,28 +231,70 @@ def get_random_word():
     learned_word_ids = learned_words_df["word_id"].tolist()
 
     # Retrieve words from the main dictionary
+
     all_words = pd.read_csv("data/raw/dictionary/words.csv")
-    cols = [
-        "wordID",
-        "lemma",
-        "Portuguese",
-        "Sentence",
-        "port_sentence",
-        "eng_sentence",
-    ]
-    all_words = all_words[cols]
-    all_words.columns = [
-        "wordID",
-        "english",
-        "portuguese",
-        "sentence",
-        "port_sentence",
-        "eng_sentence",
-    ]
+    all_verbs = pd.read_csv("data/raw/dictionary/verbs_present_tense.csv")
+
+    if practiceType == "conjugations":
+        # Select random conjugations from list
+        conj_perm = len(all_verbs["eng_conjugations"][0].split(";"))
+        randConj = random.randint(0, conj_perm - 1)
+
+        cols = [
+            "wordID",
+            "eng_conjugations",
+            "port_conjugations",
+            "eng_sentence",
+            "port_sentence",
+        ]
+
+        all_words = all_verbs[cols]
+        all_words = all_words.dropna()  # Drop rows with NaN values
+
+        # Only keep randomly selected conjugation
+        all_words["eng_conjugations"] = [
+            i.split(";")[randConj] for i in all_words["eng_conjugations"]
+        ]
+        all_words["port_conjugations"] = [
+            i.split(";")[randConj] for i in all_words["port_conjugations"]
+        ]
+        all_words["eng_sentence"] = [
+            i.split(";")[randConj] for i in all_words["eng_sentence"]
+        ]
+        all_words["port_sentence"] = [
+            i.split(";")[randConj] for i in all_words["port_sentence"]
+        ]
+
+        all_words.columns = [
+            "wordID",
+            "english",
+            "portuguese",
+            "eng_sentence",
+            "port_sentence",
+        ]
+    else:
+        cols = [
+            "wordID",
+            "lemma",
+            "Portuguese",
+            "Sentence",
+            "port_sentence",
+            "eng_sentence",
+        ]
+        all_words = all_words[cols]
+        all_words.columns = [
+            "wordID",
+            "english",
+            "portuguese",
+            "sentence",
+            "port_sentence",
+            "eng_sentence",
+        ]
 
     if mode == "practice":
         # Filter the main dictionary to get only learned words
-        chosen_word_id = get_random_word_by_weight(USER_ID, timeframe)
+        chosen_word_id = get_random_word_by_weight(USER_ID, timeframe, practiceType)
+        print(f"THE WORD IS {chosen_word_id}")
         chosen_word = all_words[all_words["wordID"].isin([chosen_word_id])].to_dict(
             "records"
         )[0]
@@ -317,10 +319,19 @@ def get_random_word():
     return jsonify({"message": "No new words to learn."})
 
 
-def get_random_word_by_weight(USER_ID, timeframe):
+def get_random_word_by_weight(USER_ID, timeframe, practiceType):
+    # NEED TO ADD SOMETHING HERE TO FILTER FOR ONLY VERBS?
+
     # Read the learned words
     learned_words_df = pd.read_csv("data/user/learned_words.csv")
+    all_words_df = pd.read_csv("data/raw/dictionary/words.csv")
+
     learned_words_df = learned_words_df[learned_words_df["user_id"] == USER_ID]
+
+    # Filter for verbs
+    if practiceType == "conjugations":
+        verb_ids = all_words_df[all_words_df["PoS"] == "v"]["wordID"].tolist()
+        learned_words_df = learned_words_df[learned_words_df["word_id"].isin(verb_ids)]
 
     if timeframe == "15":  # Filter
         learned_words_df = learned_words_df.sort_values(
@@ -385,6 +396,7 @@ def get_random_word_by_weight(USER_ID, timeframe):
         else:  # Random word returned if no difficult words exist
             print("No difficult words found. Returning random word.")
 
+    print(learned_words_df)
     # Sample a word based on the final weight
     chosen_word_id = np.random.choice(
         learned_words_df["word_id"],
